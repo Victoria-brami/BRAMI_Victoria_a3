@@ -3,3 +3,5 @@ torchvision
 tqdm
 optuna
 pytorch_lightning
+ray
+joblib

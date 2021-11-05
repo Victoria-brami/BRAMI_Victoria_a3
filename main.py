@@ -93,10 +93,10 @@ def validation():
         validation_loss, correct, len(val_loader.dataset),
         100. * correct / len(val_loader.dataset)))
 
-
-for epoch in range(1, args.epochs + 1):
-    train(epoch)
-    validation()
-    model_file = args.experiment + '/model_' + str(epoch) + '.pth'
-    torch.save(model.state_dict(), model_file)
-    print('Saved model to ' + model_file + '. You can run `python evaluate.py --model ' + model_file + '` to generate the Kaggle formatted csv file\n')
+if __name__ == '__main__':
+    for epoch in range(1, args.epochs + 1):
+        train(epoch)
+        validation()
+        model_file = args.experiment + '/model_' + str(epoch) + '.pth'
+        torch.save(model.state_dict(), model_file)
+        print('Saved model to ' + model_file + '. You can run `python evaluate.py --model ' + model_file + '` to generate the Kaggle formatted csv file\n')

@@ -11,6 +11,7 @@ class TrainDatasetConfig(object):
         self.path_thickness = 1  # internal, changing is likely to break code or accuracy
         self.batch_size = 64  # please account for optuna's n_jobs
         self.num_workers = 4
+        self.num_data = 1082
 
 
 class ValDatasetConfig(object):
@@ -47,7 +48,7 @@ class ExecutionConfig(object):
     def __init__(self):
         self.epochs = 5 # 5
         self.chkp_folder = '../experiment/optuna_training/'
-        self.gpus = 1
+        self.gpus = 1 #1
         self.num_validation_sanity_steps = 0
 
 
@@ -69,8 +70,8 @@ class OptunaConfig(object):  # put None in suggest to use the default value
         self.suggest_optimiser = None  # ['SGD', 'Adam']default is hardcoded to Adam
         self.default_optimiser = 'Adam'
 
-        self.suggest_learning_rate = None #[9e-4, 7e-3]
-        self.default_learning_rate = 0.00199193606001025
+        self.suggest_learning_rate = [1e-5, 1e-2]
+        self.default_learning_rate = 0.001
 
         self.suggest_weight_decay = None #[0, 1e-5]
         # self.default_weight_decay = 0.00936239234038259

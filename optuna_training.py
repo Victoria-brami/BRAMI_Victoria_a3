@@ -3,8 +3,8 @@ import os
 import pytorch_lightning as pl
 from pytorch_lightning import Callback
 from optuna.integration import PyTorchLightningPruningCallback
+from data import data_transforms
 import torch
-from pytorch_model_summary import summary
 from torch.optim import Adam, SGD
 import torch.utils.data
 from torchvision import transforms
@@ -14,22 +14,15 @@ from model import Net
 
 import ray
 import logging
-import optuna.optuna_training_configuration as cfg
+import optimization.optuna_training_configuration as cfg
 import joblib
 import optuna
 
 from torch.utils.data.dataset import Dataset
 import os
-import scipy.io as sio
-import json
-import random as rd
-from torch import is_tensor
-import sys
 
 #from xnect_graph import suggest_graph
 #from module_graph import GraphNet
-
-import optuna.optuna_training_configuration as cfg
 
 train_config = cfg.TrainDatasetConfig()
 val_config = cfg.ValDatasetConfig()
@@ -67,10 +60,10 @@ class LightningNet(pl.LightningModule):
 
         if net_config.resume_training:
             checkpoint = torch.load(net_config.init_chkp)
-            load_state(net, checkpoint, input_has_module=False, target_has_module=False)
+            torch.load_state(net, checkpoint, input_has_module=False, target_has_module=False)
 
         self.model = net
-        self.loss = CrossEntropyLoss()
+        self.loss = CrossEntropyLoss(reduction='mean')
 
     def forward(self, data):
         return self.model.forward(data)
@@ -157,7 +150,7 @@ def objective(trial):
         max_epochs=exec_config.epochs,
         gpus=exec_config.gpus,
         callbacks=[metrics_callback],
-        early_stop_callback=PyTorchLightningPruningCallback(trial, monitor="val_loss"),
+        # early_stop_callback=PyTorchLightningPruningCallback(trial, monitor="val_loss"),
         amp_level='O1',
         precision=16,
         num_sanity_val_steps=exec_config.num_validation_sanity_steps
@@ -204,4 +197,4 @@ if __name__ == "__main__":
         print("    {}: {}".format(key, value))
 
     # dumps the study for use with dash_study.py
-    joblib.dump(study, 'study_lr_finished.pkl')
+    joblib.dump(study, 'optimization/study_lr_finished.pkl')
