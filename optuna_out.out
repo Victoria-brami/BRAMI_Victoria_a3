@@ -1,0 +1,24 @@
+Running job on 
+Loading python/3.7.3
+  ERROR: python/3.7.3 cannot be loaded due to a conflict.
+    HINT: Might try "module unload python/3.8.2" first.
+
+CommandNotFoundError: Your shell has not been properly configured to use 'conda activate'.
+To initialize your shell, run
+
+    $ conda init <SHELL_NAME>
+
+Currently supported shells are:
+  - bash
+  - fish
+  - tcsh
+  - xonsh
+  - zsh
+  - powershell
+
+See 'conda init --help' for more information and options.
+
+IMPORTANT: You may need to close and restart your shell after running 'conda init'.
+
+
++ python optuna_training.py

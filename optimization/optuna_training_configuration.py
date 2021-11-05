@@ -5,7 +5,7 @@ class TrainDatasetConfig(object):
     """ Configuration of the training routine (params passed to the Dataset and DataLoader"""
 
     def __init__(self):
-        self.data = "../bird_dataset"
+        self.data = "/gpfswork/rech/rnt/uuj49ar/bird_dataset"
 
         self.sigma = 7  # internal, changing is likely to break code or accuracy
         self.path_thickness = 1  # internal, changing is likely to break code or accuracy
@@ -19,7 +19,7 @@ class ValDatasetConfig(object):
 
     def __init__(self):
 
-        self.data = "../bird_dataset"
+        self.data = "/gpfswork/rech/rnt/uuj49ar/bird_dataset"
 
         train_batch_size = TrainDatasetConfig().batch_size
         train_num_workers = TrainDatasetConfig().num_workers

@@ -71,17 +71,17 @@ class LightningNet(pl.LightningModule):
     # defines how the model outputs its loss on a given batch
     def training_step(self, batch, batch_idx):
 
-        inputs = batch[0]
-        labels = batch[1]
+        inputs, labels = batch
+        print('Inputs type', inputs.shape, labels.shape)
 
-        outputs = self.forward(inputs)
-        return {"Train loss": self.loss(outputs, labels)}
+        outputs = self.model.forward(inputs)
+        print('outputs type', outputs.shape, self.loss(outputs, labels))
+        loss_value = self.loss(outputs, labels)
+        return {"loss": loss_value}
 
     # defines how the model computes its accuracy on a validation batch
     def validation_step(self, batch, batch_idx):  # the accuracy is the AP50 on the fast val set
-        inputs = batch[0]
-        val_labels = batch[1]
-
+        inputs, val_labels = batch
         val_outputs = self.forward(inputs)
         loss_value = self.loss(val_labels, val_outputs)
         return {"batch_val_loss": loss_value}  # for each axis
@@ -124,7 +124,7 @@ class LightningNet(pl.LightningModule):
                                  transform=data_transforms),
             batch_size=train_config.batch_size,
             shuffle=True,
-            num_workers=train_config.num_workers)
+            num_workers=2)
         return train_loader
 
     def val_dataloader(self):
@@ -133,7 +133,7 @@ class LightningNet(pl.LightningModule):
                                  transform=data_transforms),
             batch_size=val_config.batch_size,
             shuffle=False,
-            num_workers=val_config.num_workers)
+            num_workers=2)
         return val_loader
 
 
