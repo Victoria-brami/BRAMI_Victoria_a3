@@ -22,3 +22,101 @@ IMPORTANT: You may need to close and restart your shell after running 'conda ini
 
 
 + python optuna_training.py
+Hyperband pruner
+[32m[I 2021-11-05 17:25:45,316][0m A new study created in memory with name: no-name-24c06189-0957-4492-8fbd-cf16b8a92b2b[0m
+GPU available: True, used: True
+TPU available: False, using: 0 TPU cores
+Using native 16bit precision.
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1]
+Set SLURM handle signals.
+
+  | Name  | Type             | Params
+-------------------------------------------
+0 | model | Net              | 32.9 K
+1 | loss  | CrossEntropyLoss | 0     
+-------------------------------------------
+32.9 K    Trainable params
+0         Non-trainable params
+32.9 K    Total params
+0.131     Total estimated model params size (MB)
+/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/utilities/distributed.py:68: UserWarning: The dataloader, train dataloader, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 80 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  warnings.warn(*args, **kwargs)
+/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/utilities/distributed.py:68: UserWarning: The dataloader, val dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 80 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  warnings.warn(*args, **kwargs)
+Training: 0it [00:00, ?it/s]Training:   0%|          | 0/21 [00:00<?, ?it/s]Epoch 0:   0%|          | 0/21 [00:00<?, ?it/s] Epoch 0:   5%|▍         | 1/21 [00:03<01:01,  3.08s/it]Epoch 0:   5%|▍         | 1/21 [00:03<01:01,  3.08s/it, loss=3]Epoch 0:  10%|▉         | 2/21 [00:04<00:40,  2.12s/it, loss=3]Epoch 0:  10%|▉         | 2/21 [00:04<00:40,  2.12s/it, loss=3]Epoch 0:  14%|█▍        | 3/21 [00:04<00:25,  1.42s/it, loss=3]Epoch 0:  19%|█▉        | 4/21 [00:05<00:22,  1.30s/it, loss=3]Epoch 0:  19%|█▉        | 4/21 [00:05<00:22,  1.30s/it, loss=3]Epoch 0:  24%|██▍       | 5/21 [00:05<00:17,  1.06s/it, loss=3]Epoch 0:  29%|██▊       | 6/21 [00:06<00:15,  1.02s/it, loss=3]Epoch 0:  29%|██▊       | 6/21 [00:06<00:15,  1.02s/it, loss=3]Epoch 0:  33%|███▎      | 7/21 [00:06<00:12,  1.13it/s, loss=3]Epoch 0:  38%|███▊      | 8/21 [00:06<00:11,  1.15it/s, loss=3]Epoch 0:  38%|███▊      | 8/21 [00:06<00:11,  1.15it/s, loss=3]Epoch 0:  43%|████▎     | 9/21 [00:07<00:09,  1.27it/s, loss=3]Epoch 0:  48%|████▊     | 10/21 [00:07<00:08,  1.27it/s, loss=3]Epoch 0:  48%|████▊     | 10/21 [00:07<00:08,  1.27it/s, loss=3]Epoch 0:  52%|█████▏    | 11/21 [00:07<00:07,  1.39it/s, loss=3]Epoch 0:  57%|█████▋    | 12/21 [00:08<00:06,  1.38it/s, loss=3]Epoch 0:  57%|█████▋    | 12/21 [00:08<00:06,  1.38it/s, loss=3]Epoch 0:  62%|██████▏   | 13/21 [00:08<00:05,  1.47it/s, loss=3]Epoch 0:  67%|██████▋   | 14/21 [00:09<00:04,  1.47it/s, loss=3]Epoch 0:  67%|██████▋   | 14/21 [00:09<00:04,  1.47it/s, loss=3]Epoch 0:  71%|███████▏  | 15/21 [00:09<00:03,  1.56it/s, loss=3]Epoch 0:  76%|███████▌  | 16/21 [00:10<00:03,  1.58it/s, loss=3]Epoch 0:  76%|███████▌  | 16/21 [00:10<00:03,  1.58it/s, loss=3]Epoch 0:  81%|████████  | 17/21 [00:10<00:02,  1.67it/s, loss=3]
+Validating: 0it [00:00, ?it/s][A
+Validating:   0%|          | 0/4 [00:00<?, ?it/s][A
+Validating:  25%|██▌       | 1/4 [00:01<00:05,  1.97s/it][AEpoch 0:  90%|█████████ | 19/21 [00:12<00:01,  1.56it/s, loss=3]
+Validating:  75%|███████▌  | 3/4 [00:02<00:00,  1.56it/s][A
+ Validation Accuracy: 1.5
+
+Epoch 0: 100%|██████████| 21/21 [00:12<00:00,  1.67it/s, loss=3]
+[33m[W 2021-11-05 17:26:05,795][0m Trial 0 failed because of the following error: KeyError('val_acc')
+Traceback (most recent call last):
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/optuna/_optimize.py", line 217, in _run_trial
+    value_or_values = func(trial)
+  File "optuna_training.py", line 158, in objective
+    trainer.fit(model)
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 499, in fit
+    self.dispatch()
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 546, in dispatch
+    self.accelerator.start_training(self)
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/accelerators/accelerator.py", line 73, in start_training
+    self.training_type_plugin.start_training(trainer)
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/plugins/training_type/training_type_plugin.py", line 114, in start_training
+    self._results = trainer.run_train()
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 637, in run_train
+    self.train_loop.run_training_epoch()
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/training_loop.py", line 577, in run_training_epoch
+    self.trainer.run_evaluation(on_epoch=True)
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 752, in run_evaluation
+    self.evaluation_loop.on_evaluation_end()
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/evaluation_loop.py", line 100, in on_evaluation_end
+    self.trainer.call_hook('on_validation_end', *args, **kwargs)
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 1095, in call_hook
+    trainer_hook(*args, **kwargs)
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/callback_hook.py", line 185, in on_validation_end
+    callback.on_validation_end(self, self.lightning_module)
+  File "optuna_training.py", line 41, in on_validation_end
+    print('Validation accuracy: {}'.format(trainer.callback_metrics['val_acc']))
+KeyError: 'val_acc'[0m
+Traceback (most recent call last):
+  File "optuna_training.py", line 182, in <module>
+    study.optimize(objective, n_trials=optuna_config.n_trials, timeout=optuna_config.timeout,
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/optuna/study.py", line 400, in optimize
+    _optimize(
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/optuna/_optimize.py", line 66, in _optimize
+    _optimize_sequential(
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/optuna/_optimize.py", line 163, in _optimize_sequential
+    trial = _run_trial(study, func, catch)
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/optuna/_optimize.py", line 268, in _run_trial
+    raise func_err
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/optuna/_optimize.py", line 217, in _run_trial
+    value_or_values = func(trial)
+  File "optuna_training.py", line 158, in objective
+    trainer.fit(model)
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 499, in fit
+    self.dispatch()
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 546, in dispatch
+    self.accelerator.start_training(self)
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/accelerators/accelerator.py", line 73, in start_training
+    self.training_type_plugin.start_training(trainer)
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/plugins/training_type/training_type_plugin.py", line 114, in start_training
+    self._results = trainer.run_train()
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 637, in run_train
+    self.train_loop.run_training_epoch()
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/training_loop.py", line 577, in run_training_epoch
+    self.trainer.run_evaluation(on_epoch=True)
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 752, in run_evaluation
+    self.evaluation_loop.on_evaluation_end()
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/evaluation_loop.py", line 100, in on_evaluation_end
+    self.trainer.call_hook('on_validation_end', *args, **kwargs)
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 1095, in call_hook
+    trainer_hook(*args, **kwargs)
+  File "/linkhome/rech/genini01/uuj49ar/.conda/envs/deepspeech_model2/lib/python3.8/site-packages/pytorch_lightning/trainer/callback_hook.py", line 185, in on_validation_end
+    callback.on_validation_end(self, self.lightning_module)
+  File "optuna_training.py", line 41, in on_validation_end
+    print('Validation accuracy: {}'.format(trainer.callback_metrics['val_acc']))
+KeyError: 'val_acc'
+
+                                                         [A

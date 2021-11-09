@@ -38,7 +38,7 @@ class MetricsCallback(Callback):
 
     def on_validation_end(self, trainer, pl_module):
         print()
-        print('Validation loss: {}'.format(trainer.callback_metrics['val_loss']))
+        print('Validation accuracy: {}'.format(trainer.callback_metrics['val_acc']))
         self.metrics.append(trainer.callback_metrics)
 
 
@@ -72,10 +72,7 @@ class LightningNet(pl.LightningModule):
     def training_step(self, batch, batch_idx):
 
         inputs, labels = batch
-        print('Inputs type', inputs.shape, labels.shape)
-
         outputs = self.model.forward(inputs)
-        print('outputs type', outputs.shape, self.loss(outputs, labels))
         loss_value = self.loss(outputs, labels)
         return {"loss": loss_value}
 
@@ -83,13 +80,14 @@ class LightningNet(pl.LightningModule):
     def validation_step(self, batch, batch_idx):  # the accuracy is the AP50 on the fast val set
         inputs, val_labels = batch
         val_outputs = self.forward(inputs)
-        loss_value = self.loss(val_labels, val_outputs)
-        return {"batch_val_loss": loss_value}  # for each axis
+        loss_value = self.loss(val_outputs, val_labels)
+        val_pred = val_outputs.data.max(1, keepdim=True)[1]
+        return {"batch_val_acc": val_pred.eq(val_labels.data.view_as(val_pred)).cpu().sum()}  # for each axis
 
     # aggregates the batch validations and outputs the metric
     def validation_epoch_end(self, outputs):  # the accuracy is the AP50 on the fast val set
-        total_val_loss = torch.mean(torch.tensor([x["batch_val_loss"] for x in outputs]))
-        return {"log": {"val_loss": total_val_loss}}
+        total_val_loss = torch.mean(torch.tensor([x["batch_val_acc"].float() for x in outputs]))
+        print('\n Validation Accuracy: {}'.format(total_val_loss))
 
     def configure_optimizers(self):
         # Learning rate suggestion
@@ -159,7 +157,7 @@ def objective(trial):
     model = LightningNet(trial)  # this initialisation depends on the trial argument
     trainer.fit(model)
 
-    return metrics_callback.metrics[-1]["val_loss"]  # returns the last epoch's validation loss
+    return metrics_callback.metrics[-1]["val_acc"]  # returns the last epoch's validation loss
 
 
 
