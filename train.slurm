@@ -5,8 +5,8 @@
 #SBATCH --gres=gpu:2
 #SBATCH --cpus-per-task=2
 #SBATCH --time=1:00:00
-#SBATCH --output=optuna_out.out
-#SBATCH --error=optuna_out.out
+#SBATCH --output=out_train.out
+#SBATCH --error=out_train.out
 
 echo "Running job on $hostname"
 cd /gpfswork/rech/rnt/uuj49ar/BRAMI_Victoria_a3

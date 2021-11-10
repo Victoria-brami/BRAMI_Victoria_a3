@@ -88,14 +88,14 @@ def get_model(model_name, checkpoint=None, pretrained=True):
         model = models.resnet152(pretrained=pretrained)
         model.fc = nn.Sequential(
             nn.Dropout(0.1),
-            nn.Linear(in_features=512, out_features=2048, bias=True),
-            nn.BatchNorm1d(2048),
+            nn.Linear(in_features=2048, out_features=4096, bias=True),
+            nn.BatchNorm1d(4096),
             nn.PReLU(),
-            nn.Linear(in_features=2048, out_features=128, bias=True),
+            nn.Linear(in_features=4096, out_features=512, bias=True),
             nn.BatchNorm1d(128),
             nn.PReLU(),
             nn.Dropout(0.1),
-            nn.Linear(in_features=128, out_features=num_classes, bias=True)
+            nn.Linear(in_features=512, out_features=num_classes, bias=True)
         )
 
     elif model_name == 'vgg19':
@@ -122,5 +122,5 @@ if __name__ == '__main__':
     channels = 3
     H = 224
     W = 224
-    net = get_model('resnet18', None, False)
+    net, input_size = get_model('resnet152', None, True)
     summary(net, input_size=(channels, H, W))
