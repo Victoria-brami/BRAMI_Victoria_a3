@@ -21,7 +21,7 @@ use_cuda = torch.cuda.is_available()
 state_dict = torch.load(args.model)
 model = Net()
 
-model = get_model('resnet18', None, pretrained=False)
+model, input_size = get_model('resnet18', None, pretrained=False)
 model.load_state_dict(state_dict)
 model.eval()
 if use_cuda:

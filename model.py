@@ -26,6 +26,8 @@ class Net(nn.Module):
 
 def get_model(model_name, checkpoint=None, pretrained=True):
 
+    input_size = 224 # For resnet
+
     if model_name == 'resnet18':
         model = models.resnet18(pretrained=pretrained)
         model.fc = nn.Sequential(
@@ -114,7 +116,7 @@ def get_model(model_name, checkpoint=None, pretrained=True):
     if checkpoint is not None:
         model.load_state_dict(checkpoint)
 
-    return model
+    return model, input_size
 
 if __name__ == '__main__':
     channels = 3

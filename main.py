@@ -19,6 +19,8 @@ parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
                     help='learning rate (default: 0.01)')
 parser.add_argument('--momentum', type=float, default=0.5, metavar='M',
                     help='SGD momentum (default: 0.5)')
+parser.add_argument('--optimizer', type=str, default='adam', metavar='O',
+                    help='Chosen optimizer')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
@@ -37,7 +39,13 @@ if not os.path.isdir(args.experiment):
     os.makedirs(args.experiment)
 
 # Data initialization and loading
-from data import data_transforms
+from data import *
+
+### ADDED
+aug_type = ['colors']
+### END ADDED
+
+data_transforms = build_augmentation(aug_type, input_size=224)
 
 train_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/train_images',
@@ -45,20 +53,23 @@ train_loader = torch.utils.data.DataLoader(
     batch_size=args.batch_size, shuffle=True, num_workers=1)
 val_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/val_images',
-                         transform=data_transforms),
+                         transform=default_data_transforms),
     batch_size=args.batch_size, shuffle=False, num_workers=1)
 
 # Neural network and optimizer
 # We define neural net in model.py so that it can be reused by the evaluate.py script
 from model import *
-model = get_model(args.model_name, args.checkpoint)
+model, _ = get_model(args.model_name, args.checkpoint)
 if use_cuda:
     print('Using GPU')
     model.cuda()
 else:
     print('Using CPU')
 
-optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+if args.optimizer == 'sgd':
+    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+elif args.optimizer == 'adam':
+    optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
 def train(epoch):
     model.train()

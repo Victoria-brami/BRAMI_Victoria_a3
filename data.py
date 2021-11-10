@@ -7,8 +7,8 @@ import torchvision.transforms as transforms
 # by default, we resize the images to 64 x 64 in size
 # and normalize them to mean = 0 and standard-deviation = 1 based on statistics collected from
 # the training set
-data_transforms = transforms.Compose([
-    transforms.Resize((64, 64)),
+default_data_transforms = transforms.Compose([
+    transforms.Resize((224, 224)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
@@ -23,7 +23,7 @@ def build_augmentation(aug_type, input_size):
     if 'flip' in aug_type:
         augmentations.append(transforms.RandomVerticalFlip(p=0.5))
     if 'rotate' in aug_type:
-        augmentations.append(transforms.RandomRotation(p=0.1))
+        augmentations.append(transforms.RandomRotation(degrees=80))
     if 'erasing' in aug_type:
         augmentations.append(transforms.RandomErasing())
     if 'colors' in aug_type:
@@ -32,7 +32,7 @@ def build_augmentation(aug_type, input_size):
     augmentations.append(transforms.ToTensor())
     augmentations.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
 
-    data_transforms = transforms.Compose([augmentations])
+    data_transforms = transforms.Compose(augmentations)
 
     return data_transforms
 
