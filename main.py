@@ -9,13 +9,13 @@ from tqdm import tqdm
 
 # Training settings
 parser = argparse.ArgumentParser(description='RecVis A3 training script')
-parser.add_argument('--data', type=str, default='bird_dataset', metavar='D',
+parser.add_argument('--data', type=str, default='../bird_dataset', metavar='D',
                     help="folder where data is located. train_images/ and val_images/ need to be found in the folder")
 parser.add_argument('--batch-size', type=int, default=64, metavar='B',
                     help='input batch size for training (default: 64)')
-parser.add_argument('--epochs', type=int, default=10, metavar='N',
+parser.add_argument('--epochs', type=int, default=50, metavar='N',
                     help='number of epochs to train (default: 10)')
-parser.add_argument('--lr', type=float, default=0.1, metavar='LR',
+parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
                     help='learning rate (default: 0.01)')
 parser.add_argument('--momentum', type=float, default=0.5, metavar='M',
                     help='SGD momentum (default: 0.5)')
@@ -25,6 +25,9 @@ parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
 parser.add_argument('--experiment', type=str, default='experiment', metavar='E',
                     help='folder where experiment outputs are located.')
+parser.add_argument('--model_name', type=str, default='resnet18', metavar='R',
+                    help='Name of the model used.')
+parser.add_argument('--checkpoint', type=str, default=None, help='Checkpoint filename.')
 args = parser.parse_args()
 use_cuda = torch.cuda.is_available()
 torch.manual_seed(args.seed)
@@ -47,8 +50,8 @@ val_loader = torch.utils.data.DataLoader(
 
 # Neural network and optimizer
 # We define neural net in model.py so that it can be reused by the evaluate.py script
-from model import Net
-model = Net()
+from model import *
+model = get_model(args.model_name, args.checkpoint)
 if use_cuda:
     print('Using GPU')
     model.cuda()
@@ -73,7 +76,7 @@ def train(epoch):
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.data.item()))
 
-def validation():
+def validation(txt_file='validation_scores.txt'):
     model.eval()
     validation_loss = 0
     correct = 0
@@ -92,6 +95,14 @@ def validation():
     print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
         validation_loss, correct, len(val_loader.dataset),
         100. * correct / len(val_loader.dataset)))
+
+    ### ADDED
+    filetxt = open(txt_file, 'a+')
+    filetxt.write('\n   Epoch {}:   Validation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
+        epoch, validation_loss, correct, len(val_loader.dataset),
+        100. * correct / len(val_loader.dataset)))
+    filetxt.close()
+    ### End ADDED
 
 if __name__ == '__main__':
     for epoch in range(1, args.epochs + 1):

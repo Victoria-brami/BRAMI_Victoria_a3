@@ -13,3 +13,26 @@ data_transforms = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 ])
+
+def build_augmentation(aug_type, input_size):
+
+    augmentations = [
+                    transforms.Resize((input_size, input_size))
+                ]
+
+    if 'flip' in aug_type:
+        augmentations.append(transforms.RandomVerticalFlip(p=0.5))
+    if 'rotate' in aug_type:
+        augmentations.append(transforms.RandomRotation(p=0.1))
+    if 'erasing' in aug_type:
+        augmentations.append(transforms.RandomErasing())
+    if 'colors' in aug_type:
+        augmentations.append(transforms.ColorJitter(brightness=0.1, contrast=0.2, saturation=0, hue=0))
+
+    augmentations.append(transforms.ToTensor())
+    augmentations.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+
+    data_transforms = transforms.Compose([augmentations])
+
+    return data_transforms
+

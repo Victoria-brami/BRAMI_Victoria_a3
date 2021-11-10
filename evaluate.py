@@ -5,12 +5,12 @@ import PIL.Image as Image
 
 import torch
 
-from model import Net
+from model import *
 
 parser = argparse.ArgumentParser(description='RecVis A3 evaluation script')
-parser.add_argument('--data', type=str, default='bird_dataset', metavar='D',
+parser.add_argument('--data', type=str, default='../bird_dataset', metavar='D',
                     help="folder where data is located. test_images/ need to be found in the folder")
-parser.add_argument('--model', type=str, metavar='M',
+parser.add_argument('--model', type=str, metavar='M', default='experiment/model_17.pth',
                     help="the model file to be evaluated. Usually it is of the form model_X.pth")
 parser.add_argument('--outfile', type=str, default='experiment/kaggle.csv', metavar='D',
                     help="name of the output csv file")
@@ -20,6 +20,8 @@ use_cuda = torch.cuda.is_available()
 
 state_dict = torch.load(args.model)
 model = Net()
+
+model = get_model('resnet18', None, pretrained=False)
 model.load_state_dict(state_dict)
 model.eval()
 if use_cuda:

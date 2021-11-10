@@ -11,6 +11,7 @@ from torchvision import transforms
 from torchvision import datasets
 from torch.nn.modules import CrossEntropyLoss
 from model import Net
+from torch.cuda.amp import autocast
 
 import ray
 import logging
@@ -38,7 +39,7 @@ class MetricsCallback(Callback):
 
     def on_validation_end(self, trainer, pl_module):
         print()
-        print('Validation accuracy: {}'.format(trainer.callback_metrics['val_acc']))
+        print('Validation accuracy: {}'.format(trainer.callback_metrics['batch_val_acc']))
         self.metrics.append(trainer.callback_metrics)
 
 
@@ -74,15 +75,18 @@ class LightningNet(pl.LightningModule):
         inputs, labels = batch
         outputs = self.model.forward(inputs)
         loss_value = self.loss(outputs, labels)
-        return {"loss": loss_value}
+        self.log('Train/train_loss', loss_value, on_epoch=True, on_step=True, prog_bar=True)
+        return loss_value
 
     # defines how the model computes its accuracy on a validation batch
     def validation_step(self, batch, batch_idx):  # the accuracy is the AP50 on the fast val set
         inputs, val_labels = batch
-        val_outputs = self.forward(inputs)
+        with autocast(enabled=self.precision == 16):
+            val_outputs = self.model.forward(inputs)
         loss_value = self.loss(val_outputs, val_labels)
         val_pred = val_outputs.data.max(1, keepdim=True)[1]
-        return {"batch_val_acc": val_pred.eq(val_labels.data.view_as(val_pred)).cpu().sum()}  # for each axis
+        self.log('Val/val_acc', val_pred.eq(val_labels.data.view_as(val_pred)).cpu().sum(), on_epoch=True, on_step=True, prog_bar=True)
+        return {'batch_val_acc': val_pred.eq(val_labels.data.view_as(val_pred)).cpu().sum()}
 
     # aggregates the batch validations and outputs the metric
     def validation_epoch_end(self, outputs):  # the accuracy is the AP50 on the fast val set
