@@ -30,6 +30,7 @@ parser.add_argument('--experiment', type=str, default='experiment', metavar='E',
 parser.add_argument('--model_name', type=str, default='resnet18', metavar='R',
                     help='Name of the model used.')
 parser.add_argument('--checkpoint', type=str, default=None, help='Checkpoint filename.')
+parser.add_argument('--aug_type', nargs='+', default=['flip', 'colors', 'rotate', 'erasing'], help='Checkpoint filename.')
 args = parser.parse_args()
 use_cuda = torch.cuda.is_available()
 torch.manual_seed(args.seed)
@@ -42,10 +43,10 @@ if not os.path.isdir(args.experiment):
 from data import *
 
 ### ADDED
-aug_type = ['colors']
+
 ### END ADDED
 
-data_transforms = build_augmentation(aug_type, input_size=224)
+data_transforms = build_augmentation(args.aug_type, input_size=224)
 
 train_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/train_images',
