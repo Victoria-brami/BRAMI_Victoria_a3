@@ -86,13 +86,14 @@ def get_model(model_name, checkpoint=None, pretrained=True):
 
     elif model_name == 'resnet152':
         model = models.resnet152(pretrained=pretrained)
+        print(model.fc)
         model.fc = nn.Sequential(
             nn.Dropout(0.1),
             nn.Linear(in_features=2048, out_features=4096, bias=True),
             nn.BatchNorm1d(4096),
             nn.PReLU(),
             nn.Linear(in_features=4096, out_features=512, bias=True),
-            nn.BatchNorm1d(128),
+            nn.BatchNorm1d(512),
             nn.PReLU(),
             nn.Dropout(0.1),
             nn.Linear(in_features=512, out_features=num_classes, bias=True)
