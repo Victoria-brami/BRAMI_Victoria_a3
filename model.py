@@ -24,12 +24,12 @@ class Net(nn.Module):
         return self.fc2(x)
 
 
-def get_model(model_name, checkpoint=None, pretrained=True):
+def get_model(model_name, checkpoint=None, trained=True):
 
     input_size = 224 # For resnet
 
     if model_name == 'resnet18':
-        model = models.resnet18(pretrained=pretrained)
+        model = models.resnet18(pretrained=trained)
         model.fc = nn.Sequential(
             nn.Dropout(0.1),
             nn.Linear(in_features=512, out_features=2048, bias=True),
@@ -43,7 +43,7 @@ def get_model(model_name, checkpoint=None, pretrained=True):
         )
 
     elif model_name == 'resnet34':
-        model = models.resnet34(pretrained=pretrained)
+        model = models.resnet34(pretrained=trained)
         model.fc = nn.Sequential(
             nn.Dropout(0.1),
             nn.Linear(in_features=512, out_features=2048, bias=True),
@@ -57,7 +57,7 @@ def get_model(model_name, checkpoint=None, pretrained=True):
         )
 
     elif model_name == 'resnet50':
-        model = models.resnet50(pretrained=pretrained)
+        model = models.resnet50(pretrained=trained)
         model.fc = nn.Sequential(
             nn.Dropout(0.1),
             nn.Linear(in_features=512, out_features=2048, bias=True),
@@ -71,22 +71,22 @@ def get_model(model_name, checkpoint=None, pretrained=True):
         )
 
     elif model_name == 'resnet101':
-        model = models.resnet101(pretrained=pretrained)
+        model = models.resnet101(pretrained=trained)
         model.fc = nn.Sequential(
             nn.Dropout(0.1),
-            nn.Linear(in_features=512, out_features=2048, bias=True),
-            nn.BatchNorm1d(2048),
+            nn.Linear(in_features=2048, out_features=4096, bias=True),
+            nn.BatchNorm1d(4096),
             nn.PReLU(),
-            nn.Linear(in_features=2048, out_features=128, bias=True),
-            nn.BatchNorm1d(128),
+            nn.Linear(in_features=4096, out_features=512, bias=True),
+            nn.BatchNorm1d(512),
             nn.PReLU(),
             nn.Dropout(0.1),
-            nn.Linear(in_features=128, out_features=num_classes, bias=True)
+            nn.Linear(in_features=512, out_features=num_classes, bias=True)
         )
 
     elif model_name == 'resnet152':
-        model = models.resnet152(pretrained=pretrained)
-        print(model.fc)
+        model = models.resnet152(pretrained=False)
+        model.load_state_dict(torch.load('../resnet152-b121ed2d.pth'))
         model.fc = nn.Sequential(
             nn.Dropout(0.1),
             nn.Linear(in_features=2048, out_features=4096, bias=True),
@@ -100,7 +100,7 @@ def get_model(model_name, checkpoint=None, pretrained=True):
         )
 
     elif model_name == 'vgg19':
-        model = models.vgg19(pretrained=pretrained)
+        model = models.vgg19(pretrained=trained)
         model.fc = nn.Sequential(
             nn.Dropout(0.1),
             nn.Linear(in_features=512, out_features=2048, bias=True),
@@ -123,5 +123,5 @@ if __name__ == '__main__':
     channels = 3
     H = 224
     W = 224
-    net, input_size = get_model('resnet152', None, True)
+    net, input_size = get_model('resnet152', None, trained=False)
     summary(net, input_size=(channels, H, W))
