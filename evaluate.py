@@ -10,8 +10,10 @@ from model import *
 parser = argparse.ArgumentParser(description='RecVis A3 evaluation script')
 parser.add_argument('--data', type=str, default='../bird_dataset', metavar='D',
                     help="folder where data is located. test_images/ need to be found in the folder")
-parser.add_argument('--model', type=str, metavar='M', default='experiment/model_17.pth',
+parser.add_argument('--model', type=str, metavar='M', default='best_checkpoints/bird_dataset_checkpoint.bin',
                     help="the model file to be evaluated. Usually it is of the form model_X.pth")
+parser.add_argument('--model_name', type=str, metavar='M', default='vit',
+                    help="the model to be evaluated. Usually it is of the form model_X.pth")
 parser.add_argument('--outfile', type=str, default='experiment/kaggle.csv', metavar='D',
                     help="name of the output csv file")
 
@@ -21,8 +23,9 @@ use_cuda = torch.cuda.is_available()
 state_dict = torch.load(args.model)
 model = Net()
 
-model, input_size = get_model('resnet18', None, pretrained=False)
-model.load_state_dict(state_dict)
+#model, input_size = get_model('resnet18', None, pretrained=False)
+model = create_model_for_evaluation(args.model_name, args.model, use_cuda=use_cuda)
+# model.load_state_dict(state_dict)
 model.eval()
 if use_cuda:
     print('Using GPU')
@@ -30,7 +33,7 @@ if use_cuda:
 else:
     print('Using CPU')
 
-from data import data_transforms
+from data import *
 
 test_dir = args.data + '/test_images/mistery_category'
 
@@ -46,11 +49,14 @@ output_file = open(args.outfile, "w")
 output_file.write("Id,Category\n")
 for f in tqdm(os.listdir(test_dir)):
     if 'jpg' in f:
+        data_transforms = build_augmentation('', 224)
         data = data_transforms(pil_loader(test_dir + '/' + f))
         data = data.view(1, data.size(0), data.size(1), data.size(2))
         if use_cuda:
             data = data.cuda()
         output = model(data)
+        if args.model_name == 'vit':
+            output = output[0]
         pred = output.data.max(1, keepdim=True)[1]
         output_file.write("%s,%d\n" % (f[:-4], pred))
 
