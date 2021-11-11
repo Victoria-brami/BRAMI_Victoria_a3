@@ -2,8 +2,8 @@
 #SBATCH --job-name=train_a3
 #SBATCH --ntasks=1
 #SBATCH --account=rnt@gpu
-#SBATCH --gres=gpu:2
-#SBATCH --cpus-per-task=2
+#SBATCH --gres=gpu:3
+#SBATCH --cpus-per-task=4
 #SBATCH --time=1:00:00
 #SBATCH --output=out_train.out
 #SBATCH --error=out_train.out
@@ -17,4 +17,4 @@ conda activate deepspeech_model2
 
 set -x
 
-python main.py --epochs 50 --lr 0.001 --model_name resnet152 --optimizer adam --aug_type flip rotate colors erasing
+python main.py --epochs 100 --lr 0.001 --model_name resnet152 --optimizer sgd --weight_decay 0.001 --aug_type flip colors

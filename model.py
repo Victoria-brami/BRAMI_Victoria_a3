@@ -85,18 +85,22 @@ def get_model(model_name, checkpoint=None, trained=True):
         )
 
     elif model_name == 'resnet152':
-        model = models.resnet152(pretrained=False)
-        model.load_state_dict(torch.load('../resnet152-b121ed2d.pth'))
+        model = models.resnet152(pretrained=True)
+        #chkpt = torch.load("../resnet152-b121ed2d.pth")
+        #model.load_state_dict(chkpt["model_state_dict"])
         model.fc = nn.Sequential(
-            nn.Dropout(0.1),
-            nn.Linear(in_features=2048, out_features=4096, bias=True),
-            nn.BatchNorm1d(4096),
+            nn.Dropout(0.2),
+            nn.Linear(in_features=2048, out_features=1024, bias=True),
+            nn.BatchNorm1d(1024),
             nn.PReLU(),
-            nn.Linear(in_features=4096, out_features=512, bias=True),
-            nn.BatchNorm1d(512),
+            nn.Linear(in_features=1024, out_features=256, bias=True),
+            nn.BatchNorm1d(256),
             nn.PReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(in_features=512, out_features=num_classes, bias=True)
+            nn.Dropout(0.25),
+            nn.Linear(in_features=256, out_features=128, bias=True),
+            nn.BatchNorm1d(128),
+            nn.PReLU(),
+            nn.Linear(in_features=128, out_features=num_classes, bias=True)
         )
 
     elif model_name == 'vgg19':

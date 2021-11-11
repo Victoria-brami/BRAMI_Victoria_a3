@@ -11,7 +11,7 @@ from tqdm import tqdm
 parser = argparse.ArgumentParser(description='RecVis A3 training script')
 parser.add_argument('--data', type=str, default='../bird_dataset', metavar='D',
                     help="folder where data is located. train_images/ and val_images/ need to be found in the folder")
-parser.add_argument('--batch-size', type=int, default=64, metavar='B',
+parser.add_argument('--batch-size', type=int, default=32, metavar='B',
                     help='input batch size for training (default: 64)')
 parser.add_argument('--epochs', type=int, default=50, metavar='N',
                     help='number of epochs to train (default: 10)')
@@ -29,10 +29,12 @@ parser.add_argument('--experiment', type=str, default='experiment', metavar='E',
                     help='folder where experiment outputs are located.')
 parser.add_argument('--model_name', type=str, default='resnet18', metavar='R',
                     help='Name of the model used.')
+parser.add_argument('--weight_decay', type=float, default=1e-3, metavar='W')
 parser.add_argument('--checkpoint', type=str, default=None, help='Checkpoint filename.')
 parser.add_argument('--aug_type', nargs='+', default=['flip', 'colors', 'rotate', 'erasing'], help='Checkpoint filename.')
 args = parser.parse_args()
 use_cuda = torch.cuda.is_available()
+val_use_cuda = True
 torch.manual_seed(args.seed)
 
 # Create experiment folder
@@ -64,15 +66,21 @@ model, _ = get_model(args.model_name, args.checkpoint)
 if use_cuda:
     print('Using GPU')
     model.cuda()
+if val_use_cuda:
+    print('Using GPU for validation')
+    model.cuda()
 else:
     print('Using CPU')
 
 if args.optimizer == 'sgd':
-    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
 elif args.optimizer == 'adam':
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+#optimizer = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
 
-def train(epoch):
+filename = 'resnet152_1024_256_128_scores.txt'
+
+def train(epoch, txt_file=filename):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         if use_cuda:
@@ -86,14 +94,19 @@ def train(epoch):
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss.data.item()))
+                100. * batch_idx / len(train_loader), loss.data.item())
+                )
+            filetxt = open(txt_file, 'a+')
+            filetxt.write('\n  Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss:{:.6f}'.format(epoch, batch_idx*len(data), len(train_loader.dataset), 100. * batch_idx /len(train_loader), loss.data.item()))
+            filetxt.close()
 
-def validation(txt_file='validation_scores.txt'):
+
+def validation(txt_file=filename):
     model.eval()
     validation_loss = 0
     correct = 0
     for data, target in val_loader:
-        if use_cuda:
+        if val_use_cuda:
             data, target = data.cuda(), target.cuda()
         output = model(data)
         # sum up batch loss
@@ -120,6 +133,7 @@ if __name__ == '__main__':
     for epoch in range(1, args.epochs + 1):
         train(epoch)
         validation()
-        model_file = args.experiment + '/model_' + str(epoch) + '.pth'
-        torch.save(model.state_dict(), model_file)
-        print('Saved model to ' + model_file + '. You can run `python evaluate.py --model ' + model_file + '` to generate the Kaggle formatted csv file\n')
+        model_file = args.experiment + '/resnet152_1024_256_128_sgd_model_' + str(epoch) + '.pth'
+        if epoch %10 == 0:
+            torch.save(model.state_dict(), model_file)
+            print('Saved model to ' + model_file + '. You can run `python evaluate.py --model ' + model_file + '` to generate the Kaggle formatted csv file\n')
