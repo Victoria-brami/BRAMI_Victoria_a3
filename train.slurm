@@ -17,4 +17,4 @@ conda activate deepspeech_model2
 
 set -x
 
-python main.py --epochs 100 --lr 0.001 --model_name resnet152 --optimizer sgd --weight_decay 0.001 --aug_type flip colors
+python main.py --epochs 100 --lr 0.005 --momentum 0.9 --model_name vit-B_16 --in_size 224 --optimizer sgd --weight_decay 0.00 --scheduler exponential --aug_type flip crop center_crop

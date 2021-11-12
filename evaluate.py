@@ -55,7 +55,7 @@ for f in tqdm(os.listdir(test_dir)):
         if use_cuda:
             data = data.cuda()
         output = model(data)
-        if args.model_name == 'vit':
+        if 'vit' in args.model_name:
             output = output[0]
         pred = output.data.max(1, keepdim=True)[1]
         output_file.write("%s,%d\n" % (f[:-4], pred))

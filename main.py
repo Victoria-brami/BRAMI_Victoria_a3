@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import torch
 import torch.nn as nn
@@ -21,6 +22,7 @@ parser.add_argument('--momentum', type=float, default=0.5, metavar='M',
                     help='SGD momentum (default: 0.5)')
 parser.add_argument('--optimizer', type=str, default='adam', metavar='O',
                     help='Chosen optimizer')
+parser.add_argument('--scheduler', type=str, default='exponential')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
@@ -29,6 +31,7 @@ parser.add_argument('--experiment', type=str, default='experiment', metavar='E',
                     help='folder where experiment outputs are located.')
 parser.add_argument('--model_name', type=str, default='resnet18', metavar='R',
                     help='Name of the model used.')
+parser.add_argument('--in_size', type=int)
 parser.add_argument('--weight_decay', type=float, default=1e-3, metavar='W')
 parser.add_argument('--checkpoint', type=str, default=None, help='Checkpoint filename.')
 parser.add_argument('--aug_type', nargs='+', default=['flip', 'colors', 'rotate', 'erasing'], help='Checkpoint filename.')
@@ -62,7 +65,7 @@ val_loader = torch.utils.data.DataLoader(
 # Neural network and optimizer
 # We define neural net in model.py so that it can be reused by the evaluate.py script
 from model import *
-model, _ = get_model(args.model_name, args.checkpoint)
+model, _ = get_model(args.model_name, checkpoint=args.checkpoint, trained=True, in_size=args.in_size)
 if use_cuda:
     print('Using GPU')
     model.cuda()
@@ -76,9 +79,13 @@ if args.optimizer == 'sgd':
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
 elif args.optimizer == 'adam':
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-#optimizer = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
 
-filename = 'resnet152_1024_256_128_scores.txt'
+if args.scheduler == 'cosine':    
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=100)
+else:
+    scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+
+filename = '{}_scores.txt'.format(args.model_name)
 
 def train(epoch, txt_file=filename):
     model.train()
@@ -87,6 +94,8 @@ def train(epoch, txt_file=filename):
             data, target = data.cuda(), target.cuda()
         optimizer.zero_grad()
         output = model(data)
+        if 'vit' in args.model_name:
+            output = output[0]
         criterion = torch.nn.CrossEntropyLoss(reduction='mean')
         loss = criterion(output, target)
         loss.backward()
@@ -99,6 +108,7 @@ def train(epoch, txt_file=filename):
             filetxt = open(txt_file, 'a+')
             filetxt.write('\n  Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss:{:.6f}'.format(epoch, batch_idx*len(data), len(train_loader.dataset), 100. * batch_idx /len(train_loader), loss.data.item()))
             filetxt.close()
+    scheduler.step()       
 
 
 def validation(txt_file=filename):
@@ -109,6 +119,8 @@ def validation(txt_file=filename):
         if val_use_cuda:
             data, target = data.cuda(), target.cuda()
         output = model(data)
+        if 'vit' in args.model_name:
+            output = output[0]
         # sum up batch loss
         criterion = torch.nn.CrossEntropyLoss(reduction='mean')
         validation_loss += criterion(output, target).data.item()
@@ -127,13 +139,19 @@ def validation(txt_file=filename):
         epoch, validation_loss, correct, len(val_loader.dataset),
         100. * correct / len(val_loader.dataset)))
     filetxt.close()
+
+    acc = correct / len(val_loader.dataset)
+    return acc
     ### End ADDED
 
 if __name__ == '__main__':
+    print(f'CONFIG:\n{json.dumps(vars(args), indent=4, sort_keys=True)}')
+    best_acc = 0
     for epoch in range(1, args.epochs + 1):
         train(epoch)
-        validation()
-        model_file = args.experiment + '/resnet152_1024_256_128_sgd_model_' + str(epoch) + '.pth'
-        if epoch %10 == 0:
+        val_acc = validation()
+        model_file = args.experiment + '/{}_sgd_model_'.format(args.model_name) + str(epoch) + '.pth'
+        if best_acc <= val_acc:
+            best_acc = val_acc
             torch.save(model.state_dict(), model_file)
             print('Saved model to ' + model_file + '. You can run `python evaluate.py --model ' + model_file + '` to generate the Kaggle formatted csv file\n')

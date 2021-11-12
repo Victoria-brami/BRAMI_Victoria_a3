@@ -16,22 +16,23 @@ default_data_transforms = transforms.Compose([
 
 def build_augmentation(aug_type, input_size):
 
-    augmentations = [
-                    transforms.Resize((input_size, input_size))
-                ]
+    augmentations = []
 
     if 'flip' in aug_type:
-        augmentations.append(transforms.RandomVerticalFlip(p=0.5))
+        augmentations.append(transforms.RandomHorizontalFlip(p=0.5))
+    if 'crop' in aug_type:
+        augmentations.append(transforms.RandomResizedCrop(size=(input_size, input_size)))
+    if 'center_crop' in aug_type:
+        augmentations.append(transforms.CenterCrop(size=150))
     if 'rotate' in aug_type:
         augmentations.append(transforms.RandomRotation(degrees=80))
     if 'erasing' in aug_type:
         augmentations.append(transforms.RandomErasing())
     if 'colors' in aug_type:
         augmentations.append(transforms.ColorJitter(brightness=0.1, contrast=0.2, saturation=0, hue=0))
-
+    augmentations.append(transforms.Resize((input_size, input_size)))
     augmentations.append(transforms.ToTensor())
     augmentations.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
-
     data_transforms = transforms.Compose(augmentations)
 
     return data_transforms

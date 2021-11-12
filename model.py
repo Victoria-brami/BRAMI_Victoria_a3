@@ -26,9 +26,9 @@ class Net(nn.Module):
         return self.fc2(x)
 
 
-def get_model(model_name, checkpoint=None, trained=True):
+def get_model(model_name, checkpoint=None, trained=True, in_size=224):
 
-    input_size = 224 # For resnet
+    input_size = in_size # For resnet
 
     if model_name == 'resnet18':
         model = models.resnet18(pretrained=trained)
@@ -90,17 +90,32 @@ def get_model(model_name, checkpoint=None, trained=True):
         model = models.resnet152(pretrained=True)
         # model.load_state_dict(torch.load('../resnet152-b121ed2d.pth'))
         model.fc = nn.Sequential(
-            nn.Dropout(0.1),
-            nn.Linear(in_features=2048, out_features=4096, bias=True),
-            nn.BatchNorm1d(4096),
+            nn.Dropout(0.5),
+            nn.Linear(in_features=2048, out_features=2048, bias=True),
+            nn.BatchNorm1d(2048),
             nn.PReLU(),
-            nn.Linear(in_features=4096, out_features=512, bias=True),
-            nn.BatchNorm1d(512),
+            nn.Linear(in_features=2048, out_features=1024, bias=True),
+            nn.BatchNorm1d(1924),
             nn.PReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(in_features=512, out_features=num_classes, bias=True)
+            nn.Dropout(0.2),
+            nn.Linear(in_features=1024, out_features=num_classes, bias=True)
         )
 
+    elif model_name == 'vit-B_16':
+        config = CONFIGS['ViT-B_16']
+        model = VisionTransformer(config, input_size, zero_head=True, num_classes=num_classes)
+        model.load_from(np.load('../pretrained_models/ViT-B_16.npz'))
+
+    elif model_name == 'vit-B_16-224':
+        config = CONFIGS['ViT-B_16']
+        model = VisionTransformer(config, input_size, zero_head=True, num_classes=num_classes)
+        model.load_from(np.load('../pretrained_models/ViT-B_16-224.npz'))
+
+    elif model_name == 'vit-L_16':
+        config = CONFIGS['ViT-L_16']
+        model = VisionTransformer(config, input_size, zero_head=True, num_classes=num_classes)
+        model.load_from(np.load('../pretrained_models/sam_ViT-L_16.npz'))
+    
     elif model_name == 'vgg19':
         model = models.vgg19(pretrained=trained)
         model.fc = nn.Sequential(
@@ -153,14 +168,8 @@ def create_model_for_evaluation(model_name, checkpoint_filename, use_cuda=False)
 
     elif model_name == 'vit':
         config = CONFIGS['ViT-B_16']
-        if use_cuda:
-            device = 'cuda:0'
-        else:
-            device = 'cpu'
-        num_classes = 20
         model = VisionTransformer(config, 224, zero_head=True, num_classes=num_classes)
-        checkpoint = torch.load(checkpoint_filename, map_location=device)
-        model.load_state_dict(checkpoint)
+        model.load_from(np.load('../best_checkpoints/.bin'))
         return model
 
 
