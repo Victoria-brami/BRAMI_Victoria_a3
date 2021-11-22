@@ -114,7 +114,7 @@ def get_model(model_name, checkpoint=None, trained=True, in_size=224):
     elif model_name == 'vit-L_16':
         config = CONFIGS['ViT-L_16']
         model = VisionTransformer(config, input_size, zero_head=True, num_classes=num_classes)
-        model.load_from(np.load('../pretrained_models/sam_ViT-L_16.npz'))
+        model.load_from(np.load('../pretrained_models/ViT-L_16.npz'))
     
     elif model_name == 'vgg19':
         model = models.vgg19(pretrained=trained)
@@ -166,12 +166,18 @@ def create_model_for_evaluation(model_name, checkpoint_filename, use_cuda=False)
 
         return model
 
-    elif model_name == 'vit':
+    elif model_name == 'vit-B_16-384':
         config = CONFIGS['ViT-B_16']
-        model = VisionTransformer(config, 224, zero_head=True, num_classes=num_classes)
-        model.load_from(np.load('../best_checkpoints/.bin'))
+        model = VisionTransformer(config, 384, zero_head=True, num_classes=num_classes)
+        #model.load_from(np.load(checkpoint_filename))
+        model.load_state_dict(torch.load(checkpoint_filename))
         return model
 
+    elif model_name == 'vit-L_16-384':
+        config = CONFIGS['ViT-L_16']
+        model = VisionTransformer(config, 384, zero_head=True, num_classes=num_classes)
+        model.load_state_dict(torch.load(checkpoint_filename))
+        return model
 
 
 if __name__ == '__main__':

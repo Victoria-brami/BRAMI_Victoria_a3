@@ -8,6 +8,8 @@ from torchvision import datasets
 from torch.autograd import Variable
 from tqdm import tqdm
 
+torch.cuda.empty_cache()
+
 # Training settings
 parser = argparse.ArgumentParser(description='RecVis A3 training script')
 parser.add_argument('--data', type=str, default='../bird_dataset', metavar='D',
@@ -51,7 +53,7 @@ from data import *
 
 ### END ADDED
 
-data_transforms = build_augmentation(args.aug_type, input_size=224)
+data_transforms = build_augmentation(args.aug_type, input_size=args.in_size)
 
 train_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/train_images',
@@ -82,10 +84,12 @@ elif args.optimizer == 'adam':
 
 if args.scheduler == 'cosine':    
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=100)
+elif args.scheduler == 'step':
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
 else:
     scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
-filename = '{}_scores.txt'.format(args.model_name)
+filename = '{}_yolo_b{}_lr_{}_sched_{}_scores.txt'.format(args.model_name, args.batch_size, args.lr, args.scheduler)
 
 def train(epoch, txt_file=filename):
     model.train()
@@ -146,11 +150,14 @@ def validation(txt_file=filename):
 
 if __name__ == '__main__':
     print(f'CONFIG:\n{json.dumps(vars(args), indent=4, sort_keys=True)}')
+    filetxt = open(filename, 'a+')
+    json.dump(vars(args), filetxt, indent=4)
+    filetxt.close()
     best_acc = 0
     for epoch in range(1, args.epochs + 1):
         train(epoch)
         val_acc = validation()
-        model_file = args.experiment + '/{}_sgd_model_'.format(args.model_name) + str(epoch) + '.pth'
+        model_file = args.experiment + '/{}_sgd_{}_model_'.format(args.model_name, args.in_size) + str(epoch) + '.pth'
         if best_acc <= val_acc:
             best_acc = val_acc
             torch.save(model.state_dict(), model_file)
